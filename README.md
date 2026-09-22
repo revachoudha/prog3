@@ -1,6 +1,6 @@
 # Submission Info
 
-Names:
+Names: Reva Choudha and Prithviraj Chauhan
 
 EIDs:
 
