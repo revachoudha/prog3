@@ -2,9 +2,9 @@
 
 Names: Reva Choudha and Prithviraj Chauhan
 
-EIDs:
+EIDs: rc55755 psc943
 
-Emails:
+Emails: rc55755@my.utexas.edu prithvirajchauhan0650@gmail.com
 
 Time Spent:
 
