@@ -14,7 +14,7 @@ public class Interpreter implements CritterInterpreter {
 
 	public void executeCritter(Critter c) {
 		ArrayList<String> codeList = (ArrayList<String>) c.getCode();
-		c.setNextCodeLine(0);
+		Random rand = new Random();
 
 		while (true) {
 			int currentLine = c.getNextCodeLine();
@@ -63,7 +63,6 @@ public class Interpreter implements CritterInterpreter {
 					currentLine++;
 				}
 			} else if (action.equals("ifrandom")) {
-				Random rand = new Random(); // move this to before the while loop
 				if (rand.nextBoolean()) {
 					currentLine = lineJump(parts[1], currentLine, c);
 				} else {
@@ -169,16 +168,10 @@ public class Interpreter implements CritterInterpreter {
 
 	public CritterSpecies loadSpecies(String filename) throws IOException {
 		// Check preconditions for user input
-		String name;
 		ArrayList<String> code = new ArrayList<>();
 
 		// read the file using BufferedReader .readLine()
 		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-			// first line is species name
-			name = reader.readLine();
-			if (name == null) {
-				throw new IllegalArgumentException("File cannot be empty");
-			}
 			String line;
 
 			// iterate through all instructions, save them to an ArrayList<String>
@@ -187,7 +180,7 @@ public class Interpreter implements CritterInterpreter {
 				code.add(line);
 			}
 		}
-		return new CritterSpecies(name, code);
+		return new CritterSpecies(code.get(0), code);
 	}
 
 	// this is a helper method that will translate from the given target line
