@@ -100,7 +100,7 @@ public class Interpreter implements CritterInterpreter {
 					currentLine++;
 				}
 			}
-
+			// Register methods start here
 			else if (action.equals("infect")) {
 				if (parts.length == 1) {
 					c.infect();
