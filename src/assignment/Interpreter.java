@@ -1,6 +1,5 @@
 package assignment;
 
-import java.io.IOException;
 import java.util.*;
 import java.io.*;
 
@@ -17,17 +16,92 @@ public class Interpreter implements CritterInterpreter {
 		ArrayList<String> codeList = (ArrayList<String>) c.getCode();
 		c.setNextCodeLine(0);
 
-
-		while(true) {
+		while (true) {
 			int currentLine = c.getNextCodeLine();
-			String[] parts = codeList.get(codeLine).split(" ");
+			String[] parts = codeList.get(currentLine).split(" ");
 			String action = parts[0];
 			int n = 0;
-			if(action.equals("hop")) {
+
+			if (action.equals("hop")) {
 				c.hop();
 				c.setNextCodeLine(currentLine + 1);
+			} else if (action.equals("left")) {
+				c.left();
+				c.setNextCodeLine(currentLine + 1);
+				return;
+			} else if (action.equals("right")) {
+				c.right();
+				c.setNextCodeLine(currentLine + 1);
+				return;
+			} else if (action.equals("eat")) {
+				c.eat();
+				c.setNextCodeLine(currentLine + 1);
+				return;
 			}
-			else if(action.equals("infect")) {
+
+			// line jumps
+			else if (action.equals("go")) {
+				currentLine = lineJump(parts[1], currentLine, c);
+			} else if (action.equals("ifempty")) {
+				int bearing = Integer.parseInt(parts[1]);
+				if (c.getCellContent(bearing) == Critter.EMPTY) {
+					currentLine = lineJump(parts[2], currentLine, c);
+				} else {
+					currentLine++;
+				}
+			} else if (action.equals("ifhungry")) {
+				if (c.getHungerLevel() == Critter.HungerLevel.HUNGRY
+						|| c.getHungerLevel() == Critter.HungerLevel.STARVING) {
+					currentLine = lineJump(parts[1], currentLine, c);
+				} else {
+					currentLine++;
+				}
+			} else if (action.equals("ifstarving")) {
+				if (c.getHungerLevel() == Critter.HungerLevel.STARVING) {
+					currentLine = lineJump(parts[1], currentLine, c);
+				} else {
+					currentLine++;
+				}
+			} else if (action.equals("ifrandom")) {
+				Random rand = new Random(); // move this to before the while loop
+				if (rand.nextBoolean()) {
+					currentLine = lineJump(parts[1], currentLine, c);
+				} else {
+					currentLine++;
+				}
+			} else if (action.equals("ifangle")) {
+				int b1 = Integer.parseInt(parts[1]);
+				int b2 = Integer.parseInt(parts[2]);
+
+				if (c.getOffAngle(b1) == b2) {
+					currentLine = lineJump(parts[3], currentLine, c);
+				} else {
+					currentLine++;
+				}
+			} else if (action.equals("ifwall")) {
+				int bearing = Integer.parseInt(parts[1]);
+				if (c.getCellContent(bearing) == Critter.WALL) {
+					currentLine = lineJump(parts[2], currentLine, c);
+				} else {
+					currentLine++;
+				}
+			} else if (action.equals("ifenemy")) {
+				int bearing = Integer.parseInt(parts[1]);
+				if (c.getCellContent(bearing) == Critter.ENEMY) {
+					currentLine = lineJump(parts[2], currentLine, c);
+				} else {
+					currentLine++;
+				}
+			} else if (action.equals("ifally")) {
+				int bearing = Integer.parseInt(parts[1]);
+				if (c.getCellContent(bearing) == Critter.ALLY) {
+					currentLine = lineJump(parts[2], currentLine, c);
+				} else {
+					currentLine++;
+				}
+			}
+
+			else if (action.equals("infect")) {
 				if (parts.length == 1) {
 					c.infect();
 				} else if (parts.length > 1) {
@@ -38,48 +112,40 @@ public class Interpreter implements CritterInterpreter {
 					}
 					c.infect(n);
 				}
-			}
-			else if(action.equals("write")) {
+			} else if (action.equals("write")) {
 				int reg = Integer.parseInt(parts[1].substring(1));
 				int value = Integer.parseInt(parts[2]);
 				c.setReg(reg, value);
-				currentLine ++;
-			}
-			else if(action.equals("add")) {
+				currentLine++;
+			} else if (action.equals("add")) {
 				int r1 = Integer.parseInt(parts[1].substring(1));
 				int r2 = Integer.parseInt(parts[2].substring(1));
 				c.setReg(r1, c.getReg(r1) + c.getReg(r2));
-				currentLine ++;
-			}
-			else if(action.equals("sub")) {
+				currentLine++;
+			} else if (action.equals("sub")) {
 				int r1 = Integer.parseInt(parts[1].substring(1));
 				int r2 = Integer.parseInt(parts[2].substring(1));
 				c.setReg(r1, c.getReg(r1) - c.getReg(r2));
-				currentLine ++;
+				currentLine++;
 
-				}
-			else if(action.equals("inc")) {
+			} else if (action.equals("inc")) {
 				int r1 = Integer.parseInt(parts[1].substring(1));
 				c.setReg(r1, c.getReg(r1) + 1);
-				currentLine ++;
-			}
-			else if(action.equals("dec")) {
+				currentLine++;
+			} else if (action.equals("dec")) {
 				int r1 = Integer.parseInt(parts[1].substring(1));
 				c.setReg(r1, c.getReg(r1) - 1);
-				currentLine ++;
-			}
-			else if(action.equals("iflt")) {
+				currentLine++;
+			} else if (action.equals("iflt")) {
 				int r1 = Integer.parseInt(parts[1].substring(1));
 				int r2 = Integer.parseInt(parts[2].substring(1));
 				int nth = Integer.parseInt((parts[3].substring(1)));
-				if(c.getReg(r1) < c.getReg(r2)) {
+				if (c.getReg(r1) < c.getReg(r2)) {
 					currentLine = nth;
-				}
-				else {
+				} else {
 					currentLine++;
 				}
-			}
-			else if(action.equals("ifeq")) {
+			} else if (action.equals("ifeq")) {
 				int r1 = Integer.parseInt(parts[1].substring(1));
 				int r2 = Integer.parseInt(parts[2].substring(1));
 				int nth = Integer.parseInt((parts[3].substring(1)));
@@ -88,8 +154,7 @@ public class Interpreter implements CritterInterpreter {
 				} else {
 					currentLine++;
 				}
-			}
-			else if(action.equals("ifgt")) {
+			} else if (action.equals("ifgt")) {
 				int r1 = Integer.parseInt(parts[1].substring(1));
 				int r2 = Integer.parseInt(parts[2].substring(1));
 				int nth = Integer.parseInt((parts[3].substring(1)));
@@ -99,55 +164,7 @@ public class Interpreter implements CritterInterpreter {
 					currentLine++;
 				}
 			}
-
-
-
-
-
-
-
-
-
-
-
 		}
-		// loop through the ArrayList using .getNextCodeLine()
-		// check if currentLine is out of bounds
-		// break up each String line to a String array (to separate the instruction from
-		// the line number)
-		// hella if-else statements?:
-		// ACTIONS
-		// if parts[0] = hop: critter.hop(); critter.setNextCodeLine(currentLine+1);
-		// return;
-		// left
-		// right
-		// eat
-		// infect - maybe do a nested if else here - if length of the array is 2, call
-		// lineJump
-
-		// JUMPS - HER
-		// go
-		// ifempty
-		// ifhungry
-		// ifstarving
-		// ifrandom
-		// ifangle
-		// ifwall
-		// ifenemy
-		// ifally
-		// ifempty
-
-		// REGISTERS - ME
-		// write
-		// add
-		// sub
-		// inc
-		// dec
-		// iflt
-		// ifeq
-		// ifgt
-
-		return;
 	}
 
 	public CritterSpecies loadSpecies(String filename) throws IOException {
@@ -156,17 +173,17 @@ public class Interpreter implements CritterInterpreter {
 		ArrayList<String> code = new ArrayList<>();
 
 		// read the file using BufferedReader .readLine()
-		try (BufferedReader reader = new BufferedReader(new FileReader(filename)) ) {
+		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
 			// first line is species name
 			name = reader.readLine();
-			if(name == null) {
+			if (name == null) {
 				throw new IllegalArgumentException("File cannot be empty");
 			}
 			String line;
 
 			// iterate through all instructions, save them to an ArrayList<String>
 			// exit at the blank line
-			while(!((line = reader.readLine()).isBlank())) {
+			while (!((line = reader.readLine()).isBlank())) {
 				code.add(line);
 			}
 		}
@@ -205,27 +222,5 @@ public class Interpreter implements CritterInterpreter {
 			return line;
 		}
 
-	}
-
-
-
-
-
-
-
-
-
-		}
-		}
-		try {
-			k = Integer.
-		}
-		// 4 cases:
-		// n is preceeded by +
-		// n is preceeded by -
-		// n has no prefix: absolute jump to n
-		// n is a register number (preceded by "r"): absolute jump to the register
-		// number
-		return nextLine;
 	}
 }
