@@ -17,11 +17,11 @@ public class Interpreter implements CritterInterpreter {
 		int currentLine = c.getNextCodeLine();
 
 		while (true) {
-			if(currentLine < 1 || currentLine >= codeList.size()) {
+			if (currentLine < 1 || currentLine > codeList.size()) {
 				return;
 			}
 			try {
-				String[] parts = codeList.get(currentLine).trim().split("\\s+");
+				String[] parts = codeList.get(currentLine - 1).trim().split("\\s+");
 				String action = parts[0];
 
 				if (action.equals("hop")) {
@@ -105,16 +105,16 @@ public class Interpreter implements CritterInterpreter {
 				// Register methods start here
 				else if (action.equals("infect")) {
 					if (parts.length == 1) {
-						c.infect();                                  // plain "infect"
+						c.infect();
 					} else {
 						try {
-							c.infect(Integer.parseInt(parts[1]));    // "infect 5"
+							c.infect(Integer.parseInt(parts[1]));
 						} catch (NumberFormatException e) {
 							throw new IllegalArgumentException("infect expects a line number, got '" + parts[1] + "'");
 						}
 					}
-					c.setNextCodeLine(currentLine + 1);              // action: save place
-					return;                                          // and end the turn
+					c.setNextCodeLine(currentLine + 1);
+					return;
 				} else if (action.equals("write")) {
 					int reg = parseReg(parts[1]);
 					int value = Integer.parseInt(parts[2]);
@@ -167,33 +167,38 @@ public class Interpreter implements CritterInterpreter {
 				} else {
 					throw new IllegalArgumentException("unknown instruction '" + action + "'");
 				}
-			} catch(IllegalArgumentException | IndexOutOfBoundsException e) {
+			} catch (IllegalArgumentException | IndexOutOfBoundsException e) {
 				System.err.println("Line " + currentLine + ": " + e.getMessage());
 				return;
 			}
-			}
-
 		}
 
+	}
 
 	public CritterSpecies loadSpecies(String filename) throws IOException {
 		// Check preconditions for user input
 		ArrayList<String> code = new ArrayList<>();
+		String speciesName = null;
 
 		// read the file using BufferedReader .readLine()
 		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
 			String line;
 
+			// setting the first line to the species name
+			if ((line = reader.readLine()) != null) {
+				speciesName = line.trim();
+			}
+
 			// iterate through all instructions, save them to an ArrayList<String>
 			// exit at the blank line
 			while ((line = reader.readLine()) != null && !line.isBlank()) {
-				code.add(line);
+				code.add(line.trim());
 			}
 		}
-		if(code.size() <= 1) {
+		if (speciesName == null || code.isEmpty()) {
 			return null;
 		}
-		return new CritterSpecies(code.get(0), code);
+		return new CritterSpecies(speciesName, code);
 	}
 
 	// this is a helper method that will translate from the given target line
@@ -208,8 +213,8 @@ public class Interpreter implements CritterInterpreter {
 				return Integer.parseInt(target);
 			}
 		} catch (NumberFormatException e) {
-		throw new IllegalArgumentException("bad jump target '" + target + "'");
-	}
+			throw new IllegalArgumentException("bad jump target '" + target + "'");
+		}
 	}
 
 	private int parseReg(String s) {
@@ -223,11 +228,4 @@ public class Interpreter implements CritterInterpreter {
 		return n;
 	}
 
-
-
-
-
-
-
 }
-
