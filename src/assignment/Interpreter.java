@@ -17,11 +17,11 @@ public class Interpreter implements CritterInterpreter {
 		int currentLine = c.getNextCodeLine();
 
 		while (true) {
-			if(currentLine < 1 || currentLine >= codeList.size()) {
+			if(currentLine < 1 || currentLine > codeList.size()) {
 				return;
 			}
 			try {
-				String[] parts = codeList.get(currentLine).trim().split("\\s+");
+				String[] parts = codeList.get(currentLine - 1).trim().split("\\s+");
 				String action = parts[0];
 
 				if (action.equals("hop")) {
@@ -177,23 +177,27 @@ public class Interpreter implements CritterInterpreter {
 
 
 	public CritterSpecies loadSpecies(String filename) throws IOException {
+		String name;
 		// Check preconditions for user input
 		ArrayList<String> code = new ArrayList<>();
 
 		// read the file using BufferedReader .readLine()
 		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+			name = reader.readLine();
+			if(name == null || name.isBlank()) {
+				return null;
+			}
 			String line;
-
 			// iterate through all instructions, save them to an ArrayList<String>
 			// exit at the blank line
 			while ((line = reader.readLine()) != null && !line.isBlank()) {
-				code.add(line);
+				code.add(line.trim());
 			}
 		}
-		if(code.size() <= 1) {
+		if(code.isEmpty()) {
 			return null;
 		}
-		return new CritterSpecies(code.get(0), code);
+		return new CritterSpecies(name.trim(), code);
 	}
 
 	// this is a helper method that will translate from the given target line
