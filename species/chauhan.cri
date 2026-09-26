@@ -1,0 +1,17 @@
+coolCritter
+ifenemy 0 12
+ifenemy 90 8
+ifenemy 270 6
+ifempty 0 10
+ifrandom 8
+left
+go 1
+right
+go 1
+hop
+go 1
+ifhungry 15
+infect
+go 1
+eat
+go 1
