@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
-import assignment.*;
 
 /* 
  * Any comments and methods here are purely descriptions or suggestions.
@@ -304,10 +303,62 @@ public class InterpreterTest {
         assertEquals("left", critter.getLastAction());
     }
 
+    @Test
+    // checks ifstarving to ensure that it will not jump if critter is only hungry
+    void testIfStarving() {
+        ArrayList<String> instructions = new ArrayList<>();
+        instructions.add("ifstarving 3");
+        instructions.add("hop");
+        instructions.add("eat");
+        critter.setCodeList(instructions);
+
+        critter.setHunger(Critter.HungerLevel.HUNGRY);
+        interpreter.executeCritter(critter);
+        assertEquals("hop", critter.getLastAction());
+    }
+
+    @Test
+    void testIfAngle() {
+        ArrayList<String> instructions = new ArrayList<>();
+        instructions.add("ifangle 0 90 3");
+        instructions.add("left");
+        instructions.add("hop");
+        critter.setCodeList(instructions);
+
+        critter.setOffAngle(0, 90);
+        interpreter.executeCritter(critter);
+        assertEquals("hop", critter.getLastAction());
+    }
+
+    @Test
+    void testRelConditionalJump() {
+        ArrayList<String> instructions = new ArrayList<>();
+        instructions.add("write r1 5");
+        instructions.add("write r2 5");
+        instructions.add("ifeq r1 r2 +2");
+        instructions.add("left");
+        instructions.add("eat");
+        critter.setCodeList(instructions);
+
+        interpreter.executeCritter(critter);
+        assertEquals("eat", critter.getLastAction());
+    }
+
+    @Test
+    void testOutOfBounds() {
+        ArrayList<String> instructions = new ArrayList<>();
+        instructions.add("hop");
+        critter.setCodeList(instructions);
+
+        critter.setNextCodeLine(5);
+        interpreter.executeCritter(critter);
+        assertNull(critter.getLastAction());
+    }
+
     static class TestCritter implements Critter {
         private List<String> code = new ArrayList<>();
         private int nextCodeLine = 1;
-        private final int[] registers = new int[11]; // 1-indexed for r1-r10
+        private final int[] registers = new int[11];
         private HungerLevel hungerLevel = HungerLevel.SATISFIED;
         private final Map<Integer, Integer> surroundings = new HashMap<>();
         private final Map<Integer, Integer> offAngles = new HashMap<>();
