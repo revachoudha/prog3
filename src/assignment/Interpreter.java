@@ -12,11 +12,22 @@ import java.io.*;
  */
 public class Interpreter implements CritterInterpreter {
 
+	// max number of non-action instructions a critter can run in one turn
+	private static final int MAX_STEPS = 1000;
+
 	public void executeCritter(Critter c) {
 		List<String> codeList = c.getCode();
 		int currentLine = c.getNextCodeLine();
+		int steps = 0;
 
 		while (true) {
+			// infinite loop guard: if no action has been taken after MAX_STEPS
+			// instructions, save our place and end the turn so the simulator
+			// doesn't freeze. A slow but valid program resumes here next turn.
+			if (++steps > MAX_STEPS) {
+				c.setNextCodeLine(currentLine);
+				return;
+			}
 			if(currentLine < 1 || currentLine > codeList.size()) {
 				return;
 			}
@@ -228,4 +239,3 @@ public class Interpreter implements CritterInterpreter {
 	}
 
 }
-
